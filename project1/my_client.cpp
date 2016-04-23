@@ -250,6 +250,9 @@ int main(int argc, char *argv[])
                 perror("recvwrong");
                 return 5;
             }
+            if (count3== 0) {
+                perror("no receive");
+                return 5;)
             toreceivelen -= count3;
             //cout<<"this is current receivedlen:"<<contentlen - toreceivelen<<endl;
             
