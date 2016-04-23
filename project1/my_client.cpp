@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
     httpRequest.setHeader("User-Agent", "Wget/1.15 (linux-gnu)");
     
     httpRequest.setHeader("Connection", "Keep-Alive");
-    char* test_request = httpRequest.encode();
+    const char* test_request = httpRequest.encode();
     cout<<"this is test_request:"<<test_request;
     //strcpy(test_request,"GET /index.html HTTP/1.0\nHost:www.baidu.com\n\n\n");
     std::stringstream ss;
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
         cout << buf << std::endl;
         numofremain = httpResponse2.feed(buf,remain);
         //cout<<"this is hunger nor not:"<<st;
-        if (numofremain >= 1) break;
+        if (numofremain != 0) break;
         if(count==0)break;
     }
     
@@ -192,6 +192,7 @@ int main(int argc, char *argv[])
     cout<<"status"<<status<<endl;
     if (status[0] != '2' && status[0] != '3'){
         cout<<"failed message"<<endl;
+        return 0;
     }
     else {
         cout<<"cong! retrevied message"<<endl;
