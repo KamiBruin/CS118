@@ -225,19 +225,22 @@ int main(int argc, char *argv[])
                 // cout<<remain<<endl;
                 // cout<<"*************************"<<endl;
                 // cout<<"*************************"<<endl;
-                int count2=write(fd,remain,numofremain);
-
-                cout<<"##################"<<endl;
-                cout<<count2<<endl;
-                cout<<numofremain<<endl;
-                cout<<"##################"<<endl;
-
-                toreceivelen -= count2;
-                if(count2==-1){
-                perror("Write");
-                _exit(3);
+                int count2 = 0;
+                while (count2 != numofremain){
+                    int tmp = write(fd,remain,numofremain);
+                    if(tmp == -1){
+                        perror("Write");
+                        _exit(3);
+                    }
+                    count2 += tmp;
+                    toreceivelen -= tmp;
+                    cout<<"##################"<<endl;
+                    cout<<count2<<endl;
+                    cout<<numofremain<<endl;
+                    cout<<"##################"<<endl;
                 }
             }
+
         while (toreceivelen > 0){
             memset(content, '\0', 1024);
             int count3=recv(sockfd, content, sizeof(content), 0);
