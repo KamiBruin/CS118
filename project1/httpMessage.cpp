@@ -169,6 +169,7 @@ int HttpRequest::decodeFirstLine() {
 			string url_str = firstLine.substr(j, i - j);
 			url = url_str;
 			j = i + 1;
+			break;
 		}
 		
 	}
@@ -318,6 +319,7 @@ int HttpResponse::decodeFirstLine() {
 				return -1; //undefined user input detection
 			}
 			j = i + 1;
+			break;
 		}
 		
 	}

@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
         perror("wrong Open file");
         _exit(2);
     }   
-        if (remain != NULL)
+        if (numofremain != -1)
             {
                 // cout<<"*************************"<<endl;
                 // cout<<"*************************"<<endl;
