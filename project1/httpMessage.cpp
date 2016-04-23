@@ -72,7 +72,7 @@ int HttpMessage::feed(const char *buf, char *&remain) {
 		mark = message.substr(i, 4);
 		// cout<<mark<<endl;
 		if (mark == "\r\n\r\n") {
-			h_message = message.substr(0, i+2);
+			h_message = message.substr(0, i+4);
 			// cout<<h_message<<endl;
 			isReady = true;
 			string remain_str = message.substr(i + 4, len - i - 4);
@@ -96,34 +96,45 @@ int HttpMessage::feed(const char *buf, char *&remain) {
 }
 
 
+
 //HttpRequest
-void HttpRequest::consume() {
+bool HttpRequest::consume() {
 	if(!isReady) {
 		perror("message is not ready !!\n");
-		return;	
+		return false;	
 	}
 	int i = decodeFirstLine();
-	// cout<<h_message<<endl;
-	// cout<<i<<endl;
+	if(i < 0) return false;
 	int j = i;
 	for (; i < (int)h_message.length();) {
 		if (h_message.substr(i, 2) == "\r\n") {
-			if(i - j == 0) return;
+			// cout<<"consuming !!!!!!!!!!!!, total "<<h_message.length()<<endl;
+			// cout<<"i="<<i<<endl;
+			// cout<<"j="<<j<<endl;
+			if(i - j == 0) {
+				// cout<<"about finish!!!!"<<endl;
+				return true;
+			}
 			string subheader = h_message.substr(j, i-j);
+			bool flag_semi = false;
 			for (int k = 0; k < (int)subheader.length(); k++) {
 				if (subheader.substr(k, 2) == ": ") {
+					flag_semi = true;
 					string key = subheader.substr(0, k);
 					string value = subheader.substr(k+2, subheader.length() - k - 2);
 					headers[key] = value;
 				}
 			}
+			if(!flag_semi) return false;
 			i += 2;
 			j = i;
+			// cout<<"i="<<i<<endl;
+			// cout<<"j="<<j<<endl;
 		} else {
 			i++;
 		}
 	}
-	return;
+	return false;
 }
 
 int HttpRequest::decodeFirstLine() {
@@ -135,31 +146,39 @@ int HttpRequest::decodeFirstLine() {
 	for (; i < (int)h_message.length(); i++) {
 		if(h_message.substr(i, 2) == "\r\n") break;
 	}
+	if(i == (int)h_message.length()) {
+		return -1;
+	}
 	int ret = i + 2;
 	string firstLine = h_message.substr(0, i);
 	j = 0;
+	int count_field = 0;
 	for (i = 0; i < (int)firstLine.length(); i++) {
 		if(firstLine[i] == ' ' && j == 0) {
+			count_field++;
 			string method_str = firstLine.substr(0, i);
 			if(method_str == "GET") {
 				h_method = GET;
 			} else {
 				h_method = METHOD_OTHER;
+				return -1;
 			}
 			j = i + 1;
 		} else if(firstLine[i] == ' ' && j != 0) {
+			count_field++;
 			string url_str = firstLine.substr(j, i - j);
 			url = url_str;
 			j = i + 1;
 		}
 		
 	}
+	if(count_field != 2) return -1;
 	string http_version_str = firstLine.substr(j, i - j);
 	if (http_version_str == "HTTP/1.0") {
 		h_version = HTTP_1_0;
 	} else if (http_version_str == "HTTP/1.1" ) {
 		h_version = HTTP_1_1;
-	}
+	} else return -1;
 	return ret;
 }
 
@@ -212,31 +231,35 @@ void HttpRequest::setUrl(string input) {
 }
 
 //Http Response
-void HttpResponse::consume() {
+bool HttpResponse::consume() {
 	if(!isReady) {
 		perror("message is not ready !!\n");
-		return;	
+		return false;	
 	}
 	int i = decodeFirstLine();
+	if(i < 0) return false;
 	int j = i;
 	for (; i < (int)h_message.length();) {
 		if (h_message.substr(i, 2) == "\r\n") {
-			if(i - j == 0) return;
+			if(i - j == 0) return true;
 			string subheader = h_message.substr(j, i-j);
+			bool flag_semi = false;
 			for (int k = 0; k < (int)subheader.length(); k++) {
 				if (subheader.substr(k, 2) == ": ") {
+					flag_semi = true;
 					string key = subheader.substr(0, k);
 					string value = subheader.substr(k+2, subheader.length() - k - 2);
 					headers[key] = value;
 				}
 			}
+			if(!flag_semi) return false;
 			i += 2;
 			j = i;
 		} else {
 			i++;
 		}
 	}
-	return;
+	return false;
 }
 
 string HttpResponse::getStatus() {
@@ -275,21 +298,30 @@ int HttpResponse::decodeFirstLine() {
 	int ret = i + 2;
 	string firstLine = h_message.substr(0, i);
 	j = 0;
+	int count_field = 0;
 	for (i = 0; i < (int)firstLine.length(); i++) {
 		if(firstLine[i] == ' ' && j == 0) {
+			count_field++;
 			string http_version_str = firstLine.substr(j, i - j);
 			if (http_version_str == "HTTP/1.0") {
 				h_version = HTTP_1_0;
 			} else if (http_version_str == "HTTP_1_1" ) {
 				h_version = HTTP_1_1;
+			} else { //undefined user input detection
+				return -1;
 			}
 			j = i + 1;
 		} else if(firstLine[i] == ' ' && j != 0) {
+			count_field++;
 			m_status = firstLine.substr(j, i - j);
+			if (m_status != "200" && m_status != "400" && m_status != "404") {
+				return -1; //undefined user input detection
+			}
 			j = i + 1;
 		}
 		
 	}
+	if(i==j || count_field != 2) return -1;
 	string status_description_str = firstLine.substr(j, i - j);
 	m_statusDescription = status_description_str;
 	

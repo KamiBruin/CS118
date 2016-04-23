@@ -64,7 +64,7 @@ public:
 		h_method = GET;
 		url = "";
 	}
-	void consume();
+	bool consume();
 	int decodeFirstLine();
 	char* encode();
 //getter
@@ -79,7 +79,7 @@ private:
 	string m_status;
 	string m_statusDescription;
 public:
-	void consume();
+	bool consume();
 	int decodeFirstLine();
 	char* encode();
 //getter
