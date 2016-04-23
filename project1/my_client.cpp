@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
     
     httpRequest.setHeader("Connection", "Keep-Alive");
     const char* test_request = httpRequest.encode();
-    cout<<"this is test_request:"<<test_request;
+    cout<<"this is test_request:\n"<<test_request;
     //strcpy(test_request,"GET /index.html HTTP/1.0\nHost:www.baidu.com\n\n\n");
     std::stringstream ss;
 
@@ -167,24 +167,25 @@ int main(int argc, char *argv[])
     }
 
     char buf[1024] = {'\0'};
-    char *remain = NULL;
+    const char *remain = NULL;
     HttpResponse httpResponse2;
-    int numofremain = 0;
+    int numofremain = 0;//now it means length of header.******
+    int count;
     while (1) {
         memset(buf, '\0', strlen(buf));
 
-        int count=recv(sockfd, buf, 512, 0);
-
+        count=recv(sockfd, buf, 1, 0);
         if (count== -1) {
             perror("recv");
             return 5;
         }
+        cout<<"First receive: "<<count<<" bytes."<<endl;
         //cout << "echo: ";
-        cout << buf << std::endl;
+        cout << buf;
         numofremain = httpResponse2.feed(buf,remain);
         //cout<<"this is hunger nor not:"<<st;
         if (numofremain != 0) break;
-        if(count==0)break;
+        //if(count==0)break;
     }
     
     httpResponse2.consume();
@@ -226,9 +227,10 @@ int main(int argc, char *argv[])
                 // cout<<"*************************"<<endl;
                 // cout<<"*************************"<<endl;
                 int count2 = 0;
-                while (count2 != numofremain){
-                    int tmp = write(fd,remain,numofremain);
-                    if(tmp == -1){
+                while (count2 != count-numofremain){
+                    int tmp = write(fd,remain,count-numofremain);
+
+                    if(tmp==-1){
                         perror("Write");
                         _exit(3);
                     }
@@ -239,8 +241,10 @@ int main(int argc, char *argv[])
                     cout<<numofremain<<endl;
                     cout<<"##################"<<endl;
                 }
-            }
 
+                
+                
+            }
         while (toreceivelen > 0){
             memset(content, '\0', 1024);
             int count3=recv(sockfd, content, sizeof(content), 0);
@@ -248,19 +252,24 @@ int main(int argc, char *argv[])
             // cout<<count3<<endl;
             // cout<<content<<endl;
             // cout<<content[count3-1]<<endl;
+            if(count3!=sizeof(content)){
+                cout<<"Strange reading:"<<count3<<";at TORECEIVELEN:"<<toreceivelen<<endl;
+            }
 
             if (count3== -1) {
                 perror("recvwrong");
                 return 5;
             }
             if (count3== 0) {
+                cout<<"Bytes remain:"<<toreceivelen<<endl;
+
                 perror("no receive");
                 return 5;
             }
              toreceivelen -= count3;
             //cout<<"this is current receivedlen:"<<contentlen - toreceivelen<<endl;
             
-            cout<<"this is current receivedlen:"<<toreceivelen<<endl;
+            //cout<<"this is current receivedlen:"<<toreceivelen<<endl;
             //cout<<"echo:"<<content<<endl;
             if (toreceivelen < 0) 
             {
@@ -286,6 +295,7 @@ int main(int argc, char *argv[])
             }
             
         }
+    cout<<"End of receive:"<<toreceivelen<<endl;
     close(fd);    
 }
 

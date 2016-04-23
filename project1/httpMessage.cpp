@@ -54,10 +54,11 @@ int HttpMessage::feed(const char *buf) {
 	return 0;
 }
 
-int HttpMessage::feed(const char *buf, char *&remain) {
+int HttpMessage::feed(const char *buf,const char *&remain) {
 	// cout<<"****************"<<endl;
 	// cout<<"&&&&&&&&&&&&&&&&&&"<<endl;
 	// cout<<buf<<endl;
+	int prev_length = ss.str().length();
 	ss << buf;
 	string message = ss.str();
 	// cout<<"*&*&*&*&*&*&*&*&"<<endl;
@@ -75,21 +76,31 @@ int HttpMessage::feed(const char *buf, char *&remain) {
 			h_message = message.substr(0, i+4);
 			// cout<<h_message<<endl;
 			isReady = true;
-			string remain_str = message.substr(i + 4, len - i - 4);
-			//must allocate space in heap to transfer remain_str out
-			remain = new char[remain_str.length()+1];
-			// cout<<"remain length"<<(int)remain_str.length()<<endl;
-			// cout<<remain_str[remain_str.length()-1]<<endl;
-			for(int k = 0; k < (int)remain_str.length(); k++) {
-				remain[k] = remain_str[k];
+
+			if(i+4 == len) {
+				remain = NULL;
+				return -1;
+			} else {
+				remain = buf + i + 4 - prev_length;
+				return i + 4 - prev_length;
 			}
-			remain[remain_str.length()] = '\0';
-			// cout<<"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"<<endl;
-			// cout<<remain<<endl;
-			// cout<<"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"<<endl;
-			// cout<<remain<<endl;
-			if(remain_str.length() == 0) return -1;
-			return remain_str.length();
+
+
+			// string remain_str = message.substr(i + 4, len - i - 4);
+			// //must allocate space in heap to transfer remain_str out
+			// remain = new char[remain_str.length()+1];
+			// // cout<<"remain length"<<(int)remain_str.length()<<endl;
+			// // cout<<remain_str[remain_str.length()-1]<<endl;
+			// for(int k = 0; k < (int)remain_str.length(); k++) {
+			// 	remain[k] = remain_str[k];
+			// }
+			// remain[remain_str.length()] = '\0';
+			// // cout<<"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"<<endl;
+			// // cout<<remain<<endl;
+			// // cout<<"^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"<<endl;
+			// // cout<<remain<<endl;
+			// if(remain_str.length() == 0) return -1;
+			// return remain_str.length();
 		} 
 	}
 	return 0;

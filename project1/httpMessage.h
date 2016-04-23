@@ -44,7 +44,7 @@ public:
 		// f_pointer = 0;
 	}
 
-	int feed(const char *buf, char *&remain);
+	int feed(const char *buf, const char *&remain);
 	int feed(const char *buf);
 //getter
 	HttpVersion getVersion();
