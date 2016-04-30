@@ -159,7 +159,7 @@ main(int argc,char* argv[])
   				perror("recv");
   				return 5;
   			}
-  			char * remain=NULL;
+  			const char * remain=NULL;
   			isEnd=httpRequest.feed(buf,remain);
   			ss << buf << std::endl;
   			std::cout << buf << std::endl;
