@@ -54,6 +54,11 @@ int HttpMessage::feed(const char *buf) {
 	return 0;
 }
 
+void HttpMessage::clear() {
+	ss.str("");
+	return;
+}
+
 int HttpMessage::feed(const char *buf,const char *&remain) {
 	// cout<<"****************"<<endl;
 	// cout<<"&&&&&&&&&&&&&&&&&&"<<endl;
@@ -317,7 +322,7 @@ int HttpResponse::decodeFirstLine() {
 			string http_version_str = firstLine.substr(j, i - j);
 			if (http_version_str == "HTTP/1.0") {
 				h_version = HTTP_1_0;
-			} else if (http_version_str == "HTTP_1_1" ) {
+			} else if (http_version_str == "HTTP/1.1" ) {
 				h_version = HTTP_1_1;
 			} else { //undefined user input detection
 				return -1;

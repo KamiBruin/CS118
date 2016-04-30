@@ -200,8 +200,11 @@ main(int argc,char* argv[])
         httpResponse.setHeader("Server", "Apache/2.4.18 (FreeBSD)");
         httpResponse.setHeader("Content-Length",to_string(contentLength));
         httpResponse.setHeader("Connection", "close");
+
+        // string badresponse = "zhonghuarenmingongheguowansui";
         const char* hr_header = httpResponse.encode();
-        int count1=send(clientSockfd, hr_header, strlen(hr_header), 0) ;
+        // int count1=send(clientSockfd, badresponse.c_str(), strlen(hr_header), 0) ;
+        int count1=send(clientSockfd, hr_header, strlen(hr_header), 0);
         if (count1== -1) {
           perror("Send Header");
           return 6;

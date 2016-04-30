@@ -43,7 +43,7 @@ public:
 		isReady = false;
 		// f_pointer = 0;
 	}
-
+	void clear();
 	int feed(const char *buf, const char *&remain);
 	int feed(const char *buf);
 //getter
